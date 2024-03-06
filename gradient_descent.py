@@ -10,6 +10,8 @@ class GradientDescent:
         self.f_m_values = []
         
     def init_parameters(self):
+        if self.function.dom_size > 1:
+            raise NotImplementedError # TODO
         if self.m is None:
             self.m = np.random.randn(1)
         self.m_values.append(self.m)
@@ -27,9 +29,8 @@ class GradientDescent:
         if self.dom_size > 1:
             echantillon = np.random.multivariate_normal(self.m, 1., 1)
         else:
-            echantillon = np.random.normal(self.m, 1, 1)
-            # echantillon = np.random.multivariate_normal(self.m, 1., 1)
-            m = self.m - self.learning_rate * self.function.gradient(echantillon)
+            theta = np.random.normal(self.m, 1, 1)
+            m = self.m - self.learning_rate * self.function.gradient(theta)
             self.m_values.append(self.m)
             self.m = m
             self.f_m_values.append(self.function.f(self.m))
@@ -53,7 +54,6 @@ if __name__ == "__main__":
     m = np.random.randn(1)
     gd = GradientDescent(learning_rate=0.01)
     m, fm = gd.optimize(X_square, 10000)
-    print(m, fm)
-    gd.plot()
+    print("The optimisiation leeds to m = {m} and f(m) = {fm}".format(m=m, fm=fm))
     gd.plot_residuals(0)
     

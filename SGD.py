@@ -11,6 +11,8 @@ class SGD:
         self.f_m_values = []
         
     def init_parameters(self):
+        if self.function.dom_size > 1:
+            raise NotImplementedError # TODO
         if self.m is None:
             self.m = np.random.randn(1)
         self.m_values.append(self.m)
@@ -29,9 +31,9 @@ class SGD:
             echantillon = np.random.multivariate_normal(self.m, 1., self.batch_size)
             appro_m = echantillon.mean(axis=0)
         else:
-            echantillon = np.random.normal(self.m, 1, self.batch_size)
-            appro_m = echantillon.mean(axis=0)
-            m = self.m - self.learning_rate * self.function.gradient(appro_m)
+            samples = np.random.normal(self.m, 1, self.batch_size)
+            theta = samples.mean(axis=0)
+            m = self.m - self.learning_rate * self.function.gradient(theta)
             self.m_values.append(self.m)
             self.m = m
             self.f_m_values.append(self.function.f(self.m))
@@ -46,7 +48,6 @@ class SGD:
         plt.plot(residuals, '-', label='|f(m) - f(m*)|')
         plt.show()
     
-    
 if __name__ == "__main__":
     f = lambda x: x**2
     gradient = lambda x: 2*x
@@ -56,6 +57,6 @@ if __name__ == "__main__":
     sgd = SGD(learning_rate=0.01)
     m, fm = sgd.optimize(X_square, 10000)
     print(m, fm)
-    sgd.plot()
+    print("The optimisiation leeds to m = {m} and f(m) = {fm}".format(m=m, fm=fm))
     sgd.plot_residuals(0)
     
