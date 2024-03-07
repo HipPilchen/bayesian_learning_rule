@@ -29,14 +29,17 @@ class SGD:
     def step(self):
         if self.dom_size > 1:
             echantillon = np.random.multivariate_normal(self.m, 1., self.batch_size)
-            appro_m = echantillon.mean(axis=0)
         else:
             samples = np.random.normal(self.m, 1, self.batch_size)
-            theta = samples.mean(axis=0)
-            m = self.m - self.learning_rate * self.function.gradient(theta)
+            appro_grad = self.approximate_gradient(samples)
+            m = self.m - self.learning_rate * appro_grad
             self.m_values.append(self.m)
             self.m = m
             self.f_m_values.append(self.function.f(self.m))
+            
+    def approximate_gradient(self, samples):
+        all_grads = np.array([self.function.gradient(sample) for sample in samples])
+        return all_grads.mean(axis=0)
         
     def plot(self):
         plt.plot(self.m_values, self.f_m_values, '-', label='f(m)')
