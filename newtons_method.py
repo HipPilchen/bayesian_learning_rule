@@ -1,5 +1,5 @@
 import numpy as np
-from functions import function
+from functions import function, Activated_function
 import matplotlib.pyplot as plt
 
 
@@ -107,25 +107,30 @@ if __name__ == "__main__":
     # optimal_value = 0.03
     # dom_f = 1
     
-    # f = lambda x: np.sin(x) 
-    # gradient = lambda x: np.cos(x)
-    # hessian = lambda x: -np.sin(x)
-    # optimal_value = -1
-    # dom_f = 1
+    f = lambda x: np.sin(x) 
+    gradient = lambda x: np.cos(x)
+    hessian = lambda x: -np.sin(x)
+    optimal_value = -1
+    dom_f = 1
+    
+    # Sigmoid function
+
 
     X_square = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
+    # final_f = Activated_function(sigmoid, X_square)
+    final_f = Activated_function("sigmoid", X_square)
     
-    f = lambda x: x**4
-    gradient = lambda x: 4*x**3
-    hessian = lambda x: 12*x**2
-    optimal_value = 0
-    dom_f = 1
-    X_four = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
-    # X_square.plot(-5, 5)
+    # f = lambda x: x**4
+    # gradient = lambda x: 4*x**3
+    # hessian = lambda x: 12*x**2
+    # optimal_value = 0
+    # dom_f = 1
+    # X_four = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
+    final_f.plot(-5, 5)
     # X_square.plot_gradient(-5, 5)
     # X_square.plot_hessian(-5, 5)
-    newtons = NewtonsMethod(learning_rate=.5, nb_MC_eval=1, m=10)
-    m, fm = newtons.optimize(X_four, 1000)
+    newtons = NewtonsMethod(learning_rate=.005, nb_MC_eval=1, m=10)
+    m, fm = newtons.optimize(final_f, 1000)
     print("The optimisiation leeds to m = {m} and f(m) = {fm}".format(m=m, fm=fm))
     newtons.plot_residuals()
     

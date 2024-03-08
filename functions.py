@@ -47,6 +47,65 @@ class function:
             plt.plot(x, y, '-')
             plt.show()
         
+class Activated_function:
+    def __init__(self, activation, principal_function):
+        self.function = principal_function
+        self.dom_size = self.function.dom_size # If f(x) is defined on R^p, dom_size = p
+        # self.optimal_value = optimal_value
+        if activation == "sigmoid":
+                sigmoid = lambda x: 1 / (1 + np.exp(-x))
+                gradient = lambda x: sigmoid(x) * (1 - sigmoid(x))
+                hessian = lambda x: gradient(x) * (1 - sigmoid(x)) - sigmoid(x) * gradient(x)
+                self.activation = function(sigmoid, gradient, 1, hessian=hessian)
+                self.optimal_value = self.activation.f( self.function.optimal_value)
+    
+    def f(self, x):
+        return self.activation.f(self.function.f(x))
+    
+    def gradient(self, x):
+        return self.function.gradient(x) * self.activation.gradient(self.function.f(x))
+    
+    def hessian(self, x):
+        return self.function.hessian(x) * self.activation.gradient(self.function.f(x)) + self.function.gradient(x) **2 * self.activation.hessian(self.function.f(x))
+    
+    def plot(self, a, b , n_points = 100):
+        if self.dom_size > 1:
+            raise NotImplementedError
+        else:
+            x = np.linspace(a, b, n_points)
+            y = [self.f(x_) for x_ in x]
+            plt.plot(x, y, '-')
+            plt.show()
+            
+    def plot_gradient(self, a, b):
+        if self.dom_size > 1:
+            raise NotImplementedError
+        else:
+            x = np.linspace(a, b, 100)
+            y = [self.gradient(x_) for x_ in x]
+            plt.plot(x, y, '-')
+            plt.show()
+            
+    def plot_hessian(self, a, b, n_points = 100):
+        if self.dom_size > 1:
+            raise NotImplementedError
+        elif self.hessian is None:
+            raise ValueError("The function must have a hessian")
+        else:
+            x = np.linspace(a, b, n_points)
+            y = [self.hessian(x_) for x_ in x]
+            plt.plot(x, y, '-')
+            plt.show()
+        
+def combined_function(theta):
+    sharp = np.exp(-30 * (theta + 1)**2)
+    
+    flat = 0.3 * (1 + np.cos(np.pi * (theta -0.8) / 2.5 ))
+    
+    combined = sharp + flat
+    combined_norm = (combined - combined.min()) / (combined.max() - combined.min())
+    
+    return -combined_norm
         
 if __name__ == "__main__":
     f = lambda x: -x**4 + 4*x**2
@@ -69,4 +128,6 @@ if __name__ == "__main__":
     sin_cos.plot(0, 1, n_points = 1000)
     sin_cos.plot_gradient(0, 1)
     sin_cos.plot_hessian(0, 1)
+    
+    
     
