@@ -12,4 +12,4 @@ def gaussian_density_1D(x, mu, sigma_2):
     Returns:
     - The density of the Gaussian distribution at point x
     """
-    return (1 / (  np.sqrt(2 * np.pi * sigma_2))) * np.exp(-0.5 * ((x - mu)**2 / sigma_2) )
+    return (1 / (  np.sqrt(2 * np.pi * sigma_2))) * np.exp( -0.5 * ((x - mu)**2 / sigma_2) )

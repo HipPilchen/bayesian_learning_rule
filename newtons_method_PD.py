@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 # TODO : ADAPT THE CODE FOR FUNCTIONS OF R^p with p accissible with self.function.dom_size
 # This code should only work with convex functions
+# https://arxiv.org/pdf/2002.10060.pdf
 
 class NewtonsMethod:
     def __init__(self, m = None, s = None, nb_MC_eval = 1, learning_rate = 0.001):
@@ -63,7 +64,10 @@ class NewtonsMethod:
             raise NotImplementedError
         else:
             hessian_appro = self.approximate_hessian(samples)
-            self.s = (1 - self.learning_rate) * self.s + self.learning_rate * hessian_appro
+            G_pd = self.s - hessian_appro
+            pd_term = self.learning_rate**2 / 2 * G_pd * 1/self.s * G_pd
+            pd_term = 0
+            self.s = (1 - self.learning_rate) * self.s + self.learning_rate * hessian_appro + pd_term
             self.s_values.append(self.s)
             print("s", self.s, "last approx hessian", hessian_appro)
             
@@ -89,43 +93,45 @@ class NewtonsMethod:
     
     
 if __name__ == "__main__":
-    f = lambda x: x**2
-    gradient = lambda x: 2*x
-    hessian = lambda x: 2
-    optimal_value = 0
+    # f = lambda x: x**2
+    # gradient = lambda x: 2*x
+    # hessian = lambda x: 2
+    # optimal_value = 0
+    # dom_f = 1
+    
+    
+    
+    f = lambda x: 1/2 * (np.sin(13*x) * np.sin(27*x) + 1)
+    gradient = lambda x: ( 13 * np.cos(13*x) * np.sin(27*x) + 27 * np.sin(13*x) * np.cos(27*x) )/2
+    hessian = lambda x: ( 13 * 27 * np.cos(13*x) * np.cos(27*x) - 13*13*np.sin(13*x) * np.cos(27*x) + 27 * 13 * np.cos(13*x) * np.cos(27*x) - 13 * 13 * np.sin(13*x) * np.sin(27*x)  ) / 2
+    optimal_value = 0.03
     dom_f = 1
-    
-    # f = lambda x: x**4 - 4*x**2
-    # gradient= lambda x: 4*x**3 - 8*x
-    # hessian = lambda x: 12*x**2 - 8
-    # optimal_value = 
-    # dom_f = 1
-    
-    # f = lambda x: 1/2 * (np.sin(13*x) * np.sin(27*x) + 1)
-    # gradient = lambda x: ( 13 * np.cos(13*x) * np.sin(27*x) + 27 * np.sin(13*x) * np.cos(27*x) )/2
-    # hessian = lambda x: ( 13 * 27 * np.cos(13*x) * np.cos(27*x) - 13*13*np.sin(13*x) * np.cos(27*x) + 27 * 13 * np.cos(13*x) * np.cos(27*x) - 13 * 13 * np.sin(13*x) * np.sin(27*x)  ) / 2
-    # optimal_value = 0.03
-    # dom_f = 1
     
     # f = lambda x: np.sin(x) 
     # gradient = lambda x: np.cos(x)
     # hessian = lambda x: -np.sin(x)
     # optimal_value = -1
     # dom_f = 1
+    
+    # f = lambda x: x**4 - 4*x**2
+    # gradient= lambda x: 4*x**3 - 8*x
+    # hessian = lambda x: 12*x**2 - 8
+    # optimal_value = -4
+    # dom_f = 1
 
     X_square = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
     
-    f = lambda x: x**4
-    gradient = lambda x: 4*x**3
-    hessian = lambda x: 12*x**2
-    optimal_value = 0
-    dom_f = 1
-    X_four = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
-    # X_square.plot(-5, 5)
+    # f = lambda x: x**4
+    # gradient = lambda x: 4*x**3
+    # hessian = lambda x: 12*x**2
+    # optimal_value = 0
+    # dom_f = 1
+    # X_four = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
+    X_square.plot(-2, 2)
     # X_square.plot_gradient(-5, 5)
     # X_square.plot_hessian(-5, 5)
-    newtons = NewtonsMethod(learning_rate=.5, nb_MC_eval=1, m=10)
-    m, fm = newtons.optimize(X_four, 1000)
+    newtons = NewtonsMethod(learning_rate=.0001, nb_MC_eval=1, m=1.5)
+    m, fm = newtons.optimize(X_square, 1000)
     print("The optimisiation leeds to m = {m} and f(m) = {fm}".format(m=m, fm=fm))
     newtons.plot_residuals()
     

@@ -60,24 +60,19 @@ class GMM_Descent:
         if self.dom_size > 1:
             raise NotImplementedError
         else:
-            hess_log_density_appro = self.appro_hessian_log_gmm(samples)
-            hessian_appro_loss = self.approximate_hessian(samples)
-            print("hess_log_density_appro", hess_log_density_appro)
-            print("hessian_appro_loss", hessian_appro_loss)
-            # hess_density  = 0
-            # self.S_k[k] = max( (1 - self.learning_rate) * self.S_k[k] + self.learning_rate * ( hessian_appro + hess_density ), 1e-2) # NOT THE SAME EQU I NEED TO CHANGE + WHAT HAPPENS IF THE HESSIAN IS NEGATIVE
-            # self.S_k[k] = ( 1 - self.learning_rate) * self.S_k[k] + self.learning_rate * ( hessian_appro_loss + hess_log_density_appro ) # NOT THE SAME EQU I NEED TO CHANGE + WHAT HAPPENS IF THE HESSIAN IS NEGATIVE
-            self.S_k[k] = self.S_k[k] + ( hessian_appro_loss + hess_log_density_appro ) # NOT THE SAME EQU I NEED TO CHANGE + WHAT HAPPENS IF THE HESSIAN IS NEGATIVE
+            hess_density = self.appro_hessian_log_gmm(samples)
+            hessian_appro = self.approximate_hessian(samples)
+            hess_density  = 0
+            self.S_k[k] = max( (1 - self.learning_rate) * self.S_k[k] + self.learning_rate * ( hessian_appro + hess_density ), 1e-2) # NOT THE SAME EQU I NEED TO CHANGE + WHAT HAPPENS IF THE HESSIAN IS NEGATIVE
             
 
     def step_k(self, k):
         if self.dom_size > 1:
-            sample = np.random.multivariate_normal(self.m_k[k], 1/self.S_k[k], self.batch_size)
+            sample = np.random.multivariate_normal(self.m_k[k], self.S_k[k], self.batch_size)
             raise NotImplementedError # TODO
         else:
-            print(k, " s_k", self.S_k[k])
-            samples = np.random.normal(self.m_k[k], 1/self.S_k[k], self.batch_size)
-            np.random.normal()
+            print("s_k", self.S_k[k])
+            samples = np.random.normal(self.m_k[k], self.S_k[k], self.batch_size)
             self.update_cov_k(samples, k)  # We update the covariance matrix before the mean
             self.update_mean_k(samples, k)
             self.f_k_values[-1][k] = self.function.f(self.m_k[k])
@@ -109,7 +104,6 @@ class GMM_Descent:
         self.S_values.append( np.zeros(self.number_of_mixtures) )   
         for k in range(self.number_of_mixtures):
             self.step_k(k)
-            print(self.m_k[0]*self.pi_k[0] + self.m_k[1]*self.pi_k[1])
         # print("After step k m_1 = ", self.m_k[0], "and m_2 = ", self.m_k[1])
         # print("And the values of f_k are ", self.f_k_values[-1])
         
@@ -140,34 +134,21 @@ class GMM_Descent:
     
     
 if __name__ == "__main__":
-    # f = lambda x: np.sin(x) 
-    # gradient = lambda x: np.cos(x)
-    # hessian = lambda x: -np.sin(x)
-    # optimal_value = -1.
-    # dom_f = 1
+    f = lambda x: np.sin(x) 
+    gradient = lambda x: np.cos(x)
+    hessian = lambda x: -np.sin(x)
+    optimal_value = -1.
+    dom_f = 1
     # f = lambda x: 1/2 * (np.sin(13*x) * np.sin(27*x) + 1)
     # gradient = lambda x: ( 13 * np.cos(13*x) * np.sin(27*x) + 27 * np.sin(13*x) * np.cos(27*x) )/2
     # hessian = lambda x: ( 13 * 27 * np.cos(13*x) * np.cos(27*x) - 13*13*np.sin(13*x) * np.cos(27*x) + 27 * 13 * np.cos(13*x) * np.cos(27*x) - 13 * 13 * np.sin(13*x) * np.sin(27*x)  ) / 2
     # dom_f = 1
     # optimal_value = 0.003
-    # sin = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
-    f = lambda x: x**2
-    gradient = lambda x: 2*x
-    hessian = lambda x: 2
-    optimal_value = 0
-    dom_f = 1
-    X_square = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
+    sin = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
     
-    f = lambda x: x**4
-    gradient = lambda x: 4*x**3
-    hessian = lambda x: 12*x**2
-    optimal_value = 0
-    dom_f = 1
-    X_four = function(f, gradient, dom_f, hessian=hessian, optimal_value=optimal_value)
-    
-    gamm_des = GMM_Descent(learning_rate=0.1, batch_size=10, number_of_mixtures = 2, m_k=np.array([-0.2, 9]), S_k=np.array([0.5, 0.5]) )
-    gamm_des.optimize(X_four, 300)
-    print(gamm_des.m_values[:, 1])
+    gamm_des = GMM_Descent(learning_rate=0.001, batch_size=10, number_of_mixtures = 2, m_k=np.array([0.2, 1.8]), S_k=np.array([0.5, 0.5]) )
+    gamm_des.optimize(sin, 10000)
+    print(gamm_des.m_values[:, 0])
     print(gamm_des.f_k_values[-1])
     gamm_des.plot_explo(0)
     gamm_des.plot_explo(1)
