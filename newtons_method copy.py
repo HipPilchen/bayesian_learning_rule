@@ -44,7 +44,7 @@ class NewtonsMethod:
             samples = np.random.multivariate_normal(self.m, 1., self.batch_size)
             raise NotImplementedError # TODO
         else:
-            samples = np.random.normal(self.m, self.s, self.batch_size)
+            samples = np.random.normal(self.m, 1/self.s, self.batch_size)
             self.update_cov(samples)  # We update the covariance matrix before the mean
             self.update_mean(samples)
             self.f_m_values.append(self.function.f(self.m))
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     X_square.plot(-5, 5)
     # X_square.plot_gradient(-5, 5)
     # X_square.plot_hessian(-5, 5)
-    newtons = NewtonsMethod(learning_rate=0.01, batch_size=20, m=1)
+    newtons = NewtonsMethod(learning_rate=1.0, batch_size=20, m=1)
     m, fm = newtons.optimize(X_square, 1000)
     print("The optimisiation leeds to m = {m} and f(m) = {fm}".format(m=m, fm=fm))
     newtons.plot_residuals()

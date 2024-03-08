@@ -54,6 +54,7 @@ if __name__ == "__main__":
     m = np.random.randn(1)
     gd = GradientDescent(learning_rate=0.01)
     m, fm = gd.optimize(X_square, 10000)
+    X_square.plot(-10, 10)
     print("The optimisiation leeds to m = {m} and f(m) = {fm}".format(m=m, fm=fm))
     gd.plot_residuals(0)
     
