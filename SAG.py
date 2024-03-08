@@ -144,10 +144,20 @@ def grad_smoothed_hinge_loss(pred, y):
         return 0
     
 def f_pred(theta, x):
-    return np.tanh(x@theta[:-1] - theta[-1])
+    return x@theta[:-1] - theta[-1]
 
 def grad_f_pred(theta, x):
     last_comp = np.zeros(theta.shape[0])
     last_comp[-1] = 1
     big_x = np.concatenate((x,np.zeros(1)))
-    return (1-np.tanh(x@theta[:-1] - theta[-1])**2)*big_x - last_comp * (1-np.tanh(x.T@theta[:-1] - theta[-1])**2)
+    return big_x - last_comp 
+    
+if __name__ == "__main__":
+    X = np.r_[np.random.randn(20, 2) - [4, 4],np.random.randn(20, 2) + [4, 4]]
+    y = np.array([-1] * 20 + [1] * 20)
+
+    hinge_loss = Loss(smoothed_hinge_loss, grad_smoothed_hinge_loss)
+    predictor = Predictor(f_pred, grad_f_pred, dim_theta = 3)
+    sag = SAG(X,y,predictor,hinge_loss, batch_size = 10, learning_rate=0.001, sigma=np.diag([1,2,3]))
+    final_theta = sag.optimize(10000)
+    sag.plot()
