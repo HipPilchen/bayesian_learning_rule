@@ -18,7 +18,8 @@ class SGD:
         self.m_values.append(self.m)
         self.f_m_values.append(self.function.f(self.m))
         
-    def optimize(self, function, n_iter = 100):
+    def optimize(self, function, s = 1.0, n_iter = 100):
+        self.s = s
         self.function = function
         self.dom_size = function.dom_size
         self.init_parameters()
@@ -30,7 +31,7 @@ class SGD:
         if self.dom_size > 1:
             echantillon = np.random.multivariate_normal(self.m, 1., self.batch_size)
         else:
-            samples = np.random.normal(self.m, 1, self.batch_size)
+            samples = np.random.normal(self.m, 1/self.s, self.batch_size)
             appro_grad = self.approximate_gradient(samples)
             m = self.m - self.learning_rate * appro_grad
             self.m_values.append(self.m)
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     dom_f = 1
     X_square = function(f, gradient, dom_f)
     m = np.random.randn(1)
-    sgd = SGD(learning_rate=0.01)
+    sgd = SGD(learning_rate=0.01, S=1.0)
     m, fm = sgd.optimize(X_square, 10000)
     print(m, fm)
     print("The optimisiation leeds to m = {m} and f(m) = {fm}".format(m=m, fm=fm))

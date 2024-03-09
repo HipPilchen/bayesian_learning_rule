@@ -23,7 +23,7 @@ def create_gif_function_eval_pillow(tab_x, f, filename="function_eval_pillow.gif
     images = []
     x_min, x_max = min(tab_x), max(tab_x)
     y_values = [f(x) for x in tab_x]
-    print(y_values)
+    
     y_min, y_max = min(y_values), max(y_values)
 
     for i in range(1, len(tab_x) + 1):
