@@ -154,7 +154,7 @@ if __name__ == "__main__":
     # final_f.plot_gradient(-8, 8)
     # final_f.plot_hessian(-8, 8)
     newtons = NewtonsMethod(learning_rate=1., nb_MC_eval=100, m=0.5, method="bayes")
-    m, fm = newtons.optimize(final_f,150,  clip_sampling = 0.8)
+    m, fm = newtons.optimize(final_f,150,  clip_sampling = 0.1)
     print(np.min(newtons.m_values), np.max(newtons.m_values))
     # print(newtons.m_values)
     newtons.plot_residuals()

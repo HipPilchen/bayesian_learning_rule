@@ -6,26 +6,6 @@ from torch.nn.utils import parameters_to_vector, vector_to_parameters
 #################################
 ## PyTorch Optimizer for Vadam ##
 #################################
-def goodfellow_backprop_ggn(activations, linearGrads):
-    """
-    Returns the mean of the gradients and the diagonal of the GGN as a list of tensors
-    """
-    grads = []
-    diagGGNs = []
-    for i in range(len(linearGrads)):
-        G, X = linearGrads[i], activations[i]
-        if len(G.shape) < 2:
-            G = G.unsqueeze(1)
-
-        G *= G.shape[0] # if the function is an average
-
-        #pdb.set_trace()
-        grads.append(G.t() @ X)
-        grads.append(G.sum(dim=0))
-        diagGGNs.append(G.t()**2 @ X**2)
-        diagGGNs.append((G**2).sum(dim=0))
-    return grads, diagGGNs
-
 
 
 class Vadam(Optimizer):
@@ -644,3 +624,26 @@ class VOGN(Optimizer):
         sigma0 = 1. / math.sqrt(prec0)
         kl = self._kl_gaussian(p_mu=mu, p_sigma=sigma, q_mu=mu0, q_sigma=sigma0)
         return kl
+    
+###########################
+
+def goodfellow_backprop_ggn(activations, linearGrads):
+    """
+    Returns the mean of the gradients and the diagonal of the GGN as a list of tensors
+    """
+    grads = []
+    diagGGNs = []
+    for i in range(len(linearGrads)):
+        G, X = linearGrads[i], activations[i]
+        if len(G.shape) < 2:
+            G = G.unsqueeze(1)
+
+        G *= G.shape[0] # if the function is an average
+
+        #pdb.set_trace()
+        grads.append(G.t() @ X)
+        grads.append(G.sum(dim=0))
+        diagGGNs.append(G.t()**2 @ X**2)
+        diagGGNs.append((G**2).sum(dim=0))
+    return grads, diagGGNs
+

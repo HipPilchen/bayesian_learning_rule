@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 from models_RL import BNN, MLP, IndividualGradientMLP
 import torchsso
-from optimizers2 import VOGN, Vadam, goodfellow_backprop_ggn
+from noisyNet.optimizers import VOGN, Vadam, goodfellow_backprop_ggn
 
 
 # import torchsso
@@ -226,18 +226,18 @@ config = {'nb_actions': cartpole.action_space.n,
 #                           nn.ReLU(), 
 #                           nn.Linear(nb_neurons, n_action)).to(device)
 # model_kwargs = dict(input_size=2, output_size=None, hidden_sizes=[128])
-# model1 = BNN(input_size = state_dim,
+model1 = BNN(input_size = state_dim,
+                         hidden_sizes = [nb_neurons],
+                         output_size = n_action,
+                         )
+# model1 = MLP(input_size = state_dim,
 #                          hidden_sizes = [nb_neurons],
 #                          output_size = n_action,
 #                          )
-model1 = MLP(input_size = state_dim,
-                         hidden_sizes = [nb_neurons],
-                         output_size = n_action,
-                         )
-model1 = IndividualGradientMLP(input_size = state_dim,
-                         hidden_sizes = [nb_neurons],
-                         output_size = n_action,
-                         )
+# model1 = IndividualGradientMLP(input_size = state_dim,
+#                          hidden_sizes = [nb_neurons],
+#                          output_size = n_action,
+#                          )
 model1 = model1.to(device)
 # Train agent
 agent = dqn_agent(config, model1)

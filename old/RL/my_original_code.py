@@ -5,7 +5,7 @@ from tqdm import trange
 
 import gymnasium as gym
 
-from models import generate_my_model
+from RL.models import generate_my_model
 
 import matplotlib.pyplot as plt
 

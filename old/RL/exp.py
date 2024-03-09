@@ -5,7 +5,7 @@ import torch
 import numpy as np
 
 from vadam.datasets import Dataset, DEFAULT_DATA_FOLDER
-from models import MLP, BNN, IndividualGradientMLP
+from RL.models import MLP, BNN, IndividualGradientMLP
 import vadam.metrics as metrics
 
 from torch.optim import Adam
