@@ -55,7 +55,7 @@ class GD:
     def __init__(self, n_samples):
         self.n_samples = n_samples
 
-    def descent(loss_function, gradient_f, theta = None, step_size = 0.01, n_iter = 1000):
+    def descent(loss_function, gradient_f, theta = None, step_size = 0.01, n_iter = 1000, eps = 1e-5):
         """
         Gradient Descent algorithm.
         
@@ -76,19 +76,27 @@ class GD:
         if theta is None:
             theta = np.random.randn()
         
-        for _ in range(n_iter):
+        theta_new = theta + 1
+        theta_values.append(theta)
+        iters = 0
+        while np.abs(theta_new - theta) > eps:
             # Randomly sample a batch of data
-            
             # Compute the loss and gradient
+            theta_new = theta
             loss = loss_function(theta)
             gradient = gradient_f(theta)
             
             # Update the parameter
-            theta = theta - step_size * gradient
+            theta = theta_new - step_size * gradient
             
             # Store the parameter and loss values
             theta_values.append(theta)
             loss_values.append(loss)
+            iters += 1
+            if iters > n_iter:
+                break
+        print('number of iterations:', iters)
+
         
         return theta_values, loss_values
 
@@ -98,17 +106,28 @@ class BLR_descent:
         self.sigma = sigma
         self.n_samples = n_samples
 
-    def descent(self, loss_function, n_iter = 1000, step_size = 0.01, m = None):
+    def descent(self, loss_function, n_iter = 1000, step_size = 0.01, m = None, eps = 1e-5, min = False):
         if m is None:
             m = np.random.randn()
+        m_new = m + 1
         print('Initial m:', m)
         m_values = []
-        for _ in range(n_iter):
+        m_values.append(m)
+        iters = 0
+        while np.linalg.norm(m_new - m) > eps:
+            m = m_new
             thetas = np.random.normal(m, self.sigma, self.n_samples)
-            loss_values = loss_function(thetas)
+            if min:
+                loss_values, _, _ = loss_function(thetas)
+            else: 
+                loss_values = loss_function(thetas)
             expected_loss1 = np.mean(loss_values) * m/(self.sigma**2)
             expected_loss2 = np.mean(thetas * loss_values) * 1/(self.sigma**2)
-            m = m - step_size * (-expected_loss1 + expected_loss2)
+            m_new = m - step_size * (-expected_loss1 + expected_loss2)
             m_values.append(m)
+            iters += 1
+            if iters > n_iter:
+                break
+        print('number of iterations:', iters)   
         return m_values
     
