@@ -15,10 +15,9 @@ import matplotlib.pyplot as plt
 
 from models_RL import BNN, MLP, IndividualGradientMLP
 import torchsso
-from optimizers2 import VOGN, Vadam, goodfellow_backprop_ggn
+from optimizers import VOGN, Vadam, goodfellow_backprop_ggn
 
 
-# import torchsso
 
 class ReplayBuffer:
     def __init__(self, capacity, device):
@@ -73,7 +72,7 @@ class dqn_agent:
         self.epsilon_step = (self.epsilon_max-self.epsilon_min)/self.epsilon_stop
         self.model = model 
         self.criterion = torch.nn.MSELoss()
-        # self.optimizer = torchsso.optim.VOGN(self.model, dataset_size= 30, lr=config['learning_rate'])
+        # self.optimizer = torchsso.optim.VOGN(self.model, dataset_size= 6, lr=0.01)
         self.optimizer = Vadam(self.model.parameters(), train_set_size=70, lr=config['learning_rate'])
         # self.optimizer = VOGN(self.model.parameters(), train_set_size=6, lr=config['learning_rate'])
         # self.optimizer = torch.optim.Adam(self.model.parameters(), lr=config['learning_rate'])
@@ -226,18 +225,18 @@ config = {'nb_actions': cartpole.action_space.n,
 #                           nn.ReLU(), 
 #                           nn.Linear(nb_neurons, n_action)).to(device)
 # model_kwargs = dict(input_size=2, output_size=None, hidden_sizes=[128])
-# model1 = BNN(input_size = state_dim,
-#                          hidden_sizes = [nb_neurons],
-#                          output_size = n_action,
-#                          )
+model1 = BNN(input_size = state_dim,
+                         hidden_sizes = [nb_neurons],
+                         output_size = n_action,
+                         )
 # model1 = MLP(input_size = state_dim,
 #                          hidden_sizes = [nb_neurons],
 #                          output_size = n_action,
 #                          )
-model1 = IndividualGradientMLP(input_size = state_dim,
-                         hidden_sizes = [nb_neurons],
-                         output_size = n_action,
-                         )
+# model1 = IndividualGradientMLP(input_size = state_dim,
+#                          hidden_sizes = [nb_neurons],
+#                          output_size = n_action,
+#                          )
 model1 = model1.to(device)
 # Train agent
 agent = dqn_agent(config, model1)

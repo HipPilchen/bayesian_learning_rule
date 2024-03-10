@@ -1,39 +1,103 @@
-from torch.nn.parameter import Parameter
 import math
 import torch
 import torch.nn as nn
-import torch.nn.functional as F            
-            
-class NoisyLinear(torch.nn.Module):
-    def __init__(self, in_features, out_features, std_init=0.5):
-        super(NoisyLinear, self).__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.std_init = std_init
-        self.weight_mu = torch.nn.Parameter(torch.empty(out_features, in_features))
-        self.weight_sigma = torch.nn.Parameter(torch.empty(out_features, in_features))
-        self.bias_mu = torch.nn.Parameter(torch.empty(out_features))
-        self.bias_sigma = torch.nn.Parameter(torch.empty(out_features))
-        self.reset_parameters()
-        self.sample_noise()
-            
-    def reset_parameters(self):
-        mu_range = 1 / self.in_features ** 0.5
-        self.weight_mu.data.uniform_(-mu_range, mu_range)
-        self.weight_sigma.data.fill_(self.std_init / (self.in_features ** 0.5))
-        self.bias_mu.data.uniform_(-mu_range, mu_range)
-        self.bias_sigma.data.fill_(self.std_init / (self.out_features ** 0.5))
-            
-    def sample_noise(self):
-        self.weight_epsilon.normal_()
-        self.bias_epsilon.normal_()
-            
-    def forward(self, x):
-        if self.training:
-            return (self.weight_mu + self.weight_sigma * self.weight_epsilon).mm(x.t()).t() + (self.bias_mu + self.bias_sigma * self.bias_epsilon)
+import torch.nn.functional as F
+from torch.nn.parameter import Parameter
+
+
+class MLP(nn.Module):
+    def __init__(self, input_size, hidden_sizes, output_size, act_func="relu"):
+        super(MLP, self).__init__()
+        self.input_size = input_size
+        self.hidden_sizes = hidden_sizes
+        if output_size is not None:
+            self.output_size = output_size
+            self.squeeze_output = False
+        else :
+            self.output_size = 1
+            self.squeeze_output = True
+             
+        # Set activation function
+        if act_func == "relu":
+            self.act = F.relu
+        elif act_func == "tanh":
+            self.act = F.tanh
+        elif act_func == "sigmoid":
+            self.act = F.sigmoid
+         
+        # Define layers
+        if len(hidden_sizes) == 0:
+            # Linear model
+            self.hidden_layers = []
+            self.output_layer = nn.Linear(self.input_size, self.output_size)
         else:
-            return (self.weight_mu).mm(x.t()).t() + (self.bias_mu)
-           
+            # Neural network
+            self.hidden_layers = nn.ModuleList([nn.Linear(in_size, out_size) for in_size, out_size in zip([self.input_size] + hidden_sizes[:-1], hidden_sizes)])
+            self.output_layer = nn.Linear(hidden_sizes[-1], self.output_size)
+ 
+    def forward(self, x):
+        x = x.view(-1,self.input_size)
+        out = x
+        for layer in self.hidden_layers:
+            out = self.act(layer(out))
+        z = self.output_layer(out)
+        if self.squeeze_output:
+            z = torch.squeeze(z).view([-1])
+        return z
+
+class BNN(nn.Module):
+    def __init__(self, input_size, hidden_sizes, output_size, act_func="relu", prior_prec=1.0, prec_init=1.0):
+        super(type(self), self).__init__()
+        self.input_size = input_size
+        sigma_prior = 1.0/math.sqrt(prior_prec)
+        sigma_init = 1.0/math.sqrt(prec_init)
+        if output_size:
+            self.output_size = output_size
+            self.squeeze_output = False
+        else :
+            self.output_size = 1
+            self.squeeze_output = True
+             
+        # Set activation function
+        if act_func == "relu":
+            self.act = F.relu
+        elif act_func == "tanh":
+            self.act = F.tanh
+        elif act_func == "sigmoid":
+            self.act = F.sigmoid
+            
+        # Define layers
+        if len(hidden_sizes) == 0:
+            # Linear model
+            self.hidden_layers = []
+            self.output_layer = StochasticLinear(self.input_size, self.output_size, sigma_prior = sigma_prior, sigma_init = sigma_init)
+        else:
+            # Neural network
+            self.hidden_layers = nn.ModuleList([StochasticLinear(in_size, out_size, sigma_prior = sigma_prior, sigma_init = sigma_init) for in_size, out_size in zip([self.input_size] + hidden_sizes[:-1], hidden_sizes)])
+            self.output_layer = StochasticLinear(hidden_sizes[-1], self.output_size, sigma_prior = sigma_prior, sigma_init = sigma_init)
+
+    def forward(self, x):
+        x = x.view(-1,self.input_size)
+        out = x
+        for layer in self.hidden_layers:
+            out = self.act(layer(out))
+        z = self.output_layer(out)
+        if self.squeeze_output:
+            z = torch.squeeze(z).view([-1])
+        return z
+
+    def kl_divergence(self):
+        kl = 0
+        for layer in self.hidden_layers:
+            kl += layer.kl_divergence()
+        kl += self.output_layer.kl_divergence()
+        return(kl)
+
+
+###############################################
+## Gaussian Mean-Field Linear Transformation ##
+###############################################
+
 class StochasticLinear(nn.Module):
     """Applies a stochastic linear transformation to the incoming data: :math:`y = Ax + b`.
     This is a stochastic variant of the in-built torch.nn.Linear().
@@ -97,54 +161,7 @@ class StochasticLinear(nn.Module):
             self.in_features, self.out_features, self.sigma_prior, self.sigma_init, self.bias is not None
         )
     
-class BNN(nn.Module):
-    def __init__(self, input_size, hidden_sizes, output_size, act_func="relu", prior_prec=1.0, prec_init=1.0):
-        super(type(self), self).__init__()
-        self.input_size = input_size
-        sigma_prior = 1.0/math.sqrt(prior_prec)
-        sigma_init = 1.0/math.sqrt(prec_init)
-        if output_size:
-            self.output_size = output_size
-            self.squeeze_output = False
-        else :
-            self.output_size = 1
-            self.squeeze_output = True
-             
-        # Set activation function
-        if act_func == "relu":
-            self.act = F.relu
-        elif act_func == "tanh":
-            self.act = F.tanh
-        elif act_func == "sigmoid":
-            self.act = F.sigmoid
-            
-        # Define layers
-        if len(hidden_sizes) == 0:
-            # Linear model
-            self.hidden_layers = []
-            self.output_layer = StochasticLinear(self.input_size, self.output_size, sigma_prior = sigma_prior, sigma_init = sigma_init)
-        else:
-            # Neural network
-            self.hidden_layers = nn.ModuleList([StochasticLinear(in_size, out_size, sigma_prior = sigma_prior, sigma_init = sigma_init) for in_size, out_size in zip([self.input_size] + hidden_sizes[:-1], hidden_sizes)])
-            self.output_layer = StochasticLinear(hidden_sizes[-1], self.output_size, sigma_prior = sigma_prior, sigma_init = sigma_init)
 
-    def forward(self, x):
-        x = x.view(-1,self.input_size)
-        out = x
-        for layer in self.hidden_layers:
-            out = self.act(layer(out))
-        z = self.output_layer(out)
-        if self.squeeze_output:
-            z = torch.squeeze(z).view([-1])
-        return z
-
-    def kl_divergence(self):
-        kl = 0
-        for layer in self.hidden_layers:
-            kl += layer.kl_divergence()
-        kl += self.output_layer.kl_divergence()
-        return(kl)
-    
 class IndividualGradientMLP(nn.Module):
     def __init__(self, input_size, hidden_sizes, output_size, act_func="relu"):
         super(type(self), self).__init__()
@@ -217,5 +234,3 @@ class IndividualGradientMLP(nn.Module):
             return (z, H_list, Z_list)
 
         return z
-    
-    

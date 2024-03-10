@@ -15,10 +15,9 @@ import matplotlib.pyplot as plt
 
 from models_RL import BNN, MLP, IndividualGradientMLP
 import torchsso
-from noisyNet.optimizers import VOGN, Vadam, goodfellow_backprop_ggn
+from optimizers import VOGN, Vadam, goodfellow_backprop_ggn
 
 
-# import torchsso
 
 class ReplayBuffer:
     def __init__(self, capacity, device):
@@ -74,7 +73,7 @@ class dqn_agent:
         self.model = model 
         self.criterion = torch.nn.MSELoss()
         # self.optimizer = torchsso.optim.VOGN(self.model, dataset_size= 6, lr=0.01)
-        self.optimizer = Vadam(self.model.parameters(), train_set_size=30, lr=config['learning_rate'])
+        self.optimizer = Vadam(self.model.parameters(), train_set_size=70, lr=config['learning_rate'])
         # self.optimizer = VOGN(self.model.parameters(), train_set_size=6, lr=config['learning_rate'])
         # self.optimizer = torch.optim.Adam(self.model.parameters(), lr=config['learning_rate'])
             # def __init__(self, model: nn.Module, dataset_size: float, curv_type: str, curv_shapes: dict, curv_kwargs: dict,
@@ -149,7 +148,7 @@ class dqn_agent:
                 return loss, grad, ggn, X.size()[0]
 
             # loss1 = optimizer1.step(closure1)
-            loss = self.optimizer.step(closure2)
+            loss = self.optimizer.step(closure1)
             
             # self.optimizer.zero_grad()
             # loss.backward()
