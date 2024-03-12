@@ -13,9 +13,9 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 
-from models_RL import BNN, MLP, IndividualGradientMLP, Network
+from models_RL import BNN, MLP, IndividualGradientMLP
 # import torchsso
-from optimizers import VOGN, Vadam, MyVOGN, MyVadam,  goodfellow_backprop_ggn
+from optimizers import VOGN, Vadam, goodfellow_backprop_ggn
 
 
 # import torchsso
@@ -66,17 +66,13 @@ class dqn_agent:
         self.criterion = torch.nn.MSELoss() 
 
         if config["optimizer"] == "Vadam":
-            print("Vadam")
-            self.optimizer = MyVadam(self.model.parameters(), train_set_size=90, lr=config['learning_rate'], num_samples = 7)
+            self.optimizer = Vadam(self.model.parameters(), train_set_size=70, lr=config['learning_rate'])
         elif config["optimizer"] == "Adam":
-            print("Adam")
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=config['learning_rate'])
         elif config["optimizer"] == "SGD":
-            print("SGD")
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=config['learning_rate'])
         else:
             raise ValueError("Invalid optimizer type")
-        
         # self.optimizer = torchsso.optim.VOGN(self.model, dataset_size= 70, lr=config['learning_rate'])
         # self.optimizer = optimizer
         
@@ -95,40 +91,9 @@ class dqn_agent:
                 # output = self.model(data)
                 loss = self.criterion(QXA, update.unsqueeze(1))
                 loss.backward()
-                
-                if self.config['noisy']:
-                    self.model.reset_noise()
-                    
-                return loss
-            
-            # QYmax = self.model(Y).max(1)[0].detach()
-            # #update = torch.addcmul(R, self.gamma, 1-D, QYmax)
-            # update = torch.addcmul(R, 1-D, QYmax, value=self.gamma)
-            # outputs = self.model(X)
-            # QXA = outputs.gather(1, A.to(torch.long).unsqueeze(1))
-            
-            # self.optimizer.zero_grad()
-            # # output = self.model(data)
-            # loss = self.criterion(QXA, update.unsqueeze(1))
-            # loss.backward()
-            if self.config["optimizer"] == "SGD":
-                QYmax = self.model(Y).max(1)[0].detach()
-                #update = torch.addcmul(R, self.gamma, 1-D, QYmax)
-                update = torch.addcmul(R, 1-D, QYmax, value=self.gamma)
-                outputs = self.model(X)
-                QXA = outputs.gather(1, A.to(torch.long).unsqueeze(1))
-                
-                self.optimizer.zero_grad()
-                # output = self.model(data)
-                loss = self.criterion(QXA, update.unsqueeze(1))
-                loss.backward()
-                self.optimizer.step()
-                if self.config['noisy']:
-                    self.model.reset_noise()
-            else:
-                self.optimizer.step(closure1)
-            
-            # loss = self.optimizer.step(closure1)
+                return loss, outputs
+        
+            loss = self.optimizer.step(closure1)
 
     def train(self, env, max_episode):
         episode_return = []
@@ -180,11 +145,10 @@ class dqn_agent:
 
 def generate_model(config):
     if config['noisy']:
-        model = Network(in_dim = state_dim, hidden_dims = [nb_neurons], out_dim = n_action)
-        # model = BNN(input_size = state_dim,
-        #                     hidden_sizes = [nb_neurons],
-        #                     output_size = n_action,
-        #                     )
+        model = BNN(input_size = state_dim,
+                            hidden_sizes = [nb_neurons],
+                            output_size = n_action,
+                            )
     elif config['model_type'] == 'MLP':
         model = MLP(input_size = state_dim,
                             hidden_sizes = [nb_neurons],
@@ -216,10 +180,10 @@ if __name__ == "__main__":
             'epsilon_max': 1.0,
             'epsilon_decay_period': 3000,
             'epsilon_delay_decay': 20,
-            'noisy' : True,
+            'noisy' : False,
             'model_type': 'MLP',
-            'number_of_run_per_optimizer': 2,
-            'number_of_episode': 400,
+            'number_of_run_per_optimizer': 50,
+            'number_of_episode': 500,
             'batch_size': 30}
     
     model1 = generate_model(config)
@@ -228,7 +192,7 @@ if __name__ == "__main__":
     optimizers_to_test = [
         "Vadam",
         "Adam",
-        "SGD",
+        "SGD"
     ]
         
     tab_average_ep_return = []
@@ -249,8 +213,8 @@ if __name__ == "__main__":
         name = "true"
     else:
         name = "false"
-    np.save(f'results_noisy{name}.npy', np.array(tab_average_ep_return))
+    np.save(f'noisyNet/results_noisy{name}.npy', np.array(tab_average_ep_return))
     for i in range(len(optimizers_to_test)):
         plt.plot(tab_average_ep_return[i], label=str(optimizers_to_test[i]))
     plt.legend()
-    plt.savefig(f'plot_noisy{name}.png')
+    plt.savefig(f'noisyNet/plot_noisy{name}.png')

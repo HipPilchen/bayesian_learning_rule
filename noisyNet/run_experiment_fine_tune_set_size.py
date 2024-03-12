@@ -13,12 +13,9 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 
-from models_RL import BNN, MLP, IndividualGradientMLP
-import torchsso
-from optimizers import VOGN, Vadam, goodfellow_backprop_ggn
+from models_RL import BNN, MLP, IndividualGradientMLP, Network
 
-
-# import torchsso
+from optimizers import VOGN, Vadam, MyVOGN, MyVadam,  goodfellow_backprop_ggn
 
 class ReplayBuffer:
     def __init__(self, capacity, device):
@@ -49,7 +46,7 @@ def greedy_action(network, state):
     
 
 class dqn_agent:
-    def __init__(self, config, model, seed):
+    def __init__(self, config, model, set_size):
         device = "cuda" if next(model.parameters()).is_cuda else "cpu"
         self.env = gym.make('CartPole-v1', render_mode="rgb_array")
         self.config = config
@@ -66,13 +63,17 @@ class dqn_agent:
         self.criterion = torch.nn.MSELoss() 
 
         if config["optimizer"] == "Vadam":
-            self.optimizer = Vadam(self.model.parameters(), train_set_size=70, lr=config['learning_rate'])
+            print("Vadam")
+            self.optimizer = MyVadam(self.model.parameters(), train_set_size=set_size, lr=config['learning_rate'], num_samples = 7)
         elif config["optimizer"] == "Adam":
+            print("Adam")
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=config['learning_rate'])
         elif config["optimizer"] == "SGD":
+            print("SGD")
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=config['learning_rate'])
         else:
             raise ValueError("Invalid optimizer type")
+        
         # self.optimizer = torchsso.optim.VOGN(self.model, dataset_size= 70, lr=config['learning_rate'])
         # self.optimizer = optimizer
         
@@ -91,9 +92,25 @@ class dqn_agent:
                 # output = self.model(data)
                 loss = self.criterion(QXA, update.unsqueeze(1))
                 loss.backward()
-                return loss, outputs
-        
-            loss = self.optimizer.step(closure1)
+                
+                if self.config['noisy']:
+                    self.model.reset_noise()
+                    
+                return loss
+            
+            # QYmax = self.model(Y).max(1)[0].detach()
+            # #update = torch.addcmul(R, self.gamma, 1-D, QYmax)
+            # update = torch.addcmul(R, 1-D, QYmax, value=self.gamma)
+            # outputs = self.model(X)
+            # QXA = outputs.gather(1, A.to(torch.long).unsqueeze(1))
+            
+            # self.optimizer.zero_grad()
+            # # output = self.model(data)
+            # loss = self.criterion(QXA, update.unsqueeze(1))
+            # loss.backward()
+            self.optimizer.step(closure1)
+            
+            # loss = self.optimizer.step(closure1)
 
     def train(self, env, max_episode):
         episode_return = []
@@ -145,10 +162,11 @@ class dqn_agent:
 
 def generate_model(config):
     if config['noisy']:
-        model = BNN(input_size = state_dim,
-                            hidden_sizes = [nb_neurons],
-                            output_size = n_action,
-                            )
+        model = Network(in_dim = state_dim, hidden_dims = [nb_neurons], out_dim = n_action)
+        # model = BNN(input_size = state_dim,
+        #                     hidden_sizes = [nb_neurons],
+        #                     output_size = n_action,
+        #                     )
     elif config['model_type'] == 'MLP':
         model = MLP(input_size = state_dim,
                             hidden_sizes = [nb_neurons],
@@ -182,37 +200,35 @@ if __name__ == "__main__":
             'epsilon_delay_decay': 20,
             'noisy' : True,
             'model_type': 'MLP',
-            'number_of_run_per_optimizer': 5,
-            'number_of_episode': 130,
+            'number_of_run_per_optimizer': 3,
+            'number_of_episode': 250,
+            'optimizer': 'Vadam', # 'Adam', 'SGD', 'Vadam'
             'batch_size': 30}
     
-    
-
     model1 = generate_model(config)
     model1 = model1.to(device)
         
-    optimizers_to_test = [
-        "Vadam",
-        "Adam",
-        "SGD"
-    ]
+    
         
     tab_average_ep_return = []
-    for optimizer in optimizers_to_test:
-        avr_ep_per_optimizer = np.zeros(config['number_of_episode'])
-        print("optimizer : ", optimizer)
-        config['optimizer'] = optimizer
+    for set_sizes in range(5, 130, 8):
+        avr_ep_per_set_size = np.zeros(config['number_of_episode'])
+        print("optimizer : ", set_sizes)
         for seed in range(config['number_of_run_per_optimizer']):
             model1 = generate_model(config)
             model1 = model1.to(device)
-            agent = dqn_agent(config, model1, seed)   
+            agent = dqn_agent(config, model1, set_sizes)   
             episode_return = agent.train(cartpole, config['number_of_episode'])
-            avr_ep_per_optimizer += np.array(episode_return)
+            avr_ep_per_set_size += np.array(episode_return)
         
-        tab_average_ep_return.append(avr_ep_per_optimizer/config['number_of_run_per_optimizer'])
-        
-    np.save('noisyNet/results.npy', np.array(tab_average_ep_return))
-    for i in range(len(optimizers_to_test)):
-        plt.plot(tab_average_ep_return[i], label=str(optimizers_to_test[i]))
+        tab_average_ep_return.append(avr_ep_per_set_size/config['number_of_run_per_optimizer'])
+    
+    if config['noisy']:
+        name = "true"
+    else:
+        name = "false"
+    np.save(f'results/plot_noisy{name}_set_sizes.npy', np.array(tab_average_ep_return))
+    for i in range(5, 130, 8):
+        plt.plot(tab_average_ep_return[i], label=str(i))
     plt.legend()
-    plt.show()
+    plt.savefig(f'results/plot_noisy{name}_set_sizes.png')
