@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def gaussian_density_1D(x, mu, sigma_2):
     """
     Evaluate the density of a Gaussian distribution at a point x.

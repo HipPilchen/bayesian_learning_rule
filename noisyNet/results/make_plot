@@ -1,0 +1,20 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd  # Importez Pandas pour le calcul EWA
+
+tab_average_ep_return = np.load("results/results_noisytrue.npy")
+optimizers_to_test = ["VAdam (Ours)", "Adam"]  # Assurez-vous de définir cette liste correctement
+
+for i in range(len(optimizers_to_test)):
+    # Convertissez les résultats en DataFrame pour utiliser la fonction ewm()
+    df = pd.DataFrame(tab_average_ep_return[i])
+    smooth_data = df.ewm(span=20).mean()  # Utilisez span pour ajuster le lissage, span plus grand = plus lisse
+    
+    plt.plot(smooth_data, label=str(optimizers_to_test[i]))
+
+plt.xlabel('Number of Episodes')
+plt.ylabel('Reward')
+plt.title('EMA of the rewards after 50 Iterations on the CartPole environment')
+plt.legend()
+plt.savefig(f'plot_noisytrue03_smoothed.png')
+plt.show()
