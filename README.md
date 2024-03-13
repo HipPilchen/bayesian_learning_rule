@@ -24,8 +24,11 @@ We propose an experiment to showcase the smoothing effect and the robustness of 
 
 ### Experiment 2: Stochastic Average Gradient Descent (SAG)
 
-As an additional contribution, we introduce a novel learning algorithm based on the universality of the Bayesian Linear Regression (BLR). This algorithm, derived for Stochastic Average Gradient Descent (SAG), has not been previously described. Our experiment aims to underline the versatility and applicability of BLR in optimizing gradient descent methods in a Bayesian framework.
+As an additional contribution, we introduce a novel learning algorithm based on the universality of the Bayesian Linear Regression (BLR). This algorithm, derived for Stochastic Average Gradient Descent (SAG), has not been previously described. Our experiment aims to underline the versatility and applicability of BLR in optimizing gradient descent methods in a Bayesian framework. To compare gradient-based algorithms and generate SVM vizualisations run:
 
+  ```
+  python SAG.py
+  ```
 ### Experiment 3: Connection between BLR and NoisyNet
 
 Our research establishes a direct connection between BLR and NoisyNet, a well-known reinforcement learning algorithm. NoisyNet is designed to minimize the loss incurred by a neural network perturbed by Gaussian noise. The original NoisyNet algorithm utilizes parameter updates derived from Euclidean geometry. However, upon reviewing the literature, specifically Khan et al. (2023), we argue that employing natural gradients could significantly enhance the update process. This experiment proposes an alternative optimizer tailored for this neural network, highlighting the potential improvements in efficiency and effectiveness. In light of our review and findings, we propose the use of natural gradients as a more effective method for updating parameters in neural networks, especially those influenced by Bayesian Linear Regression and algorithms like NoisyNet. Our proposed optimizer aims to refine the updating process, making it more aligned with the underlying statistical properties of the model.
