@@ -218,8 +218,8 @@ if __name__ == "__main__":
             'epsilon_delay_decay': 20,
             'noisy' : True,
             'model_type': 'MLP',
-            'number_of_run_per_optimizer': 2,
-            'number_of_episode': 400,
+            'number_of_run_per_optimizer': 20,
+            'number_of_episode': 1300,
             'batch_size': 30}
     
     model1 = generate_model(config)
@@ -249,8 +249,12 @@ if __name__ == "__main__":
         name = "true"
     else:
         name = "false"
-    np.save(f'results_noisy{name}.npy', np.array(tab_average_ep_return))
+    np.save(f'results/results_noisy{name}.npy', np.array(tab_average_ep_return))
     for i in range(len(optimizers_to_test)):
         plt.plot(tab_average_ep_return[i], label=str(optimizers_to_test[i]))
+    plt.xlabel('Number of Episodes')
+    plt.ylabel('Reward')
+    plt.title('Average Rewards after 50 Iterations on the CartPole environment')
     plt.legend()
-    plt.savefig(f'plot_noisy{name}.png')
+    plt.savefig(f'results/plot_noisy{name}.png')
+    plt.show()
