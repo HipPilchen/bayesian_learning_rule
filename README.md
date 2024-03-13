@@ -30,6 +30,9 @@ As an additional contribution, we introduce a novel learning algorithm based on 
 
 Our research establishes a direct connection between BLR and NoisyNet, a well-known reinforcement learning algorithm. NoisyNet is designed to minimize the loss incurred by a neural network perturbed by Gaussian noise. The original NoisyNet algorithm utilizes parameter updates derived from Euclidean geometry. However, upon reviewing the literature, specifically Khan et al. (2023), we argue that employing natural gradients could significantly enhance the update process. This experiment proposes an alternative optimizer tailored for this neural network, highlighting the potential improvements in efficiency and effectiveness. In light of our review and findings, we propose the use of natural gradients as a more effective method for updating parameters in neural networks, especially those influenced by Bayesian Linear Regression and algorithms like NoisyNet. Our proposed optimizer aims to refine the updating process, making it more aligned with the underlying statistical properties of the model.
 
+To run the experiment, just run the file noisyNet/run_experiment.py
+You can modify settings in the config dictionnary in this file.
+
 ## Conclusion
 
 Through these experiments, we aim to demonstrate the inherent benefits of Bayesian methods in machine learning, from enhancing stability and robustness to offering novel approaches to algorithm optimization. Our work underscores the importance of continuing to explore and integrate Bayesian principles into machine learning to uncover more effective and efficient solutions, but also to derive new algorithms that will rely on information geometry. 
