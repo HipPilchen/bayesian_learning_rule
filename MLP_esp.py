@@ -161,7 +161,7 @@ class MLP_horder(object):
                 self.backward()
             loss /= len(X)
             self.step(learning_rate)
-            print(loss)
+            #print(loss)
 
 def plot_data(ax, X, Y):
     plt.axis('off')
@@ -371,7 +371,7 @@ def train_and_plot_comparisons(net1, net2, X, Y, x_min=-1.5, x_max=2.5,
 
         # gradient step
         net1.step(learning_rate)
-        net2.step(0.001)
+        net2.step(learning_rate)
         # draw the current decision boundary every 250 examples seen
         if it % 1000 == 0 : 
             fig, ax = plt.subplots(1, 1, facecolor='#4B6EA9')
@@ -386,47 +386,6 @@ def train_and_plot_comparisons(net1, net2, X, Y, x_min=-1.5, x_max=2.5,
                 plt.show()
     return losses1, losses2
 
-def train_and_register(net, X, Y, x_min=-1.5, x_max=2.5,
-                       y_min = -1, y_max = 1.5, n_iter = 20000, learning_rate = 1e-3):
-    fig, ax = plt.subplots(1, 1, facecolor='#4B6EA9')
-    ax.set_xlim(x_min, x_max)
-    ax.set_ylim(y_min, y_max)
-    losses = []
-    learning_rate = 1e-3
-
-    # Créer un dossier pour sauvegarder les images
-    output_folder = 'output_images'
-    os.makedirs(output_folder, exist_ok=True)
-
-    subfolder_name = f'{learning_rate}'
-
-    # Chemin complet du sous-dossier
-    subfolder_path = os.path.join(output_folder, subfolder_name)
-
-    # Créer le sous-dossier
-    os.makedirs(subfolder_path, exist_ok=True)
-
-
-    # Boucle principale d'apprentissage
-    for it in tqdm(range(20000)):
-        j = np.random.randint(1, len(X))
-        example = X[j:j+1][0]
-        label = Y[j]
-
-        out = net.forward(example)
-        loss = net.compute_loss(out, label)
-        losses.append(loss)
-        
-        net.backward()
-        net.step(learning_rate)
-        # Enregistrer l'image de la frontière de décision tous les 250 exemples
-        if it % 200 == 0:
-            fig, ax = plt.subplots(1, 1, facecolor='#4B6EA9')
-            ax.set_xlim(x_min, x_max)
-            ax.set_ylim(y_min, y_max)
-            plot_decision_boundary(ax, x_min, x_max, y_min, y_max, X, Y, net)
-            plt.savefig(f'{subfolder_path}/{it}_decision_boundary.png')
-            plt.close()
 
 
 class MyReLU(object):
@@ -522,40 +481,6 @@ class Sequential(object):
 
 
 
-        
-
-
-class bayesian_optimizer():
-
-    def __init__(self, X, y, predictor, loss, n_samples, loss_function, n_iter = 1000, 
-                 learning_rate = 0.01, batch_size = 100, m = None, s = None):
-        self.n_samples = n_samples
-        self.loss_function = loss_function
-        self.n_iter = n_iter
-        self.learning_rate = learning_rate
-        self.batch_size = batch_size
-        self.f = predictor
-        self.loss = loss
-        self.grad = np.zeros((X.shape[0], self.f.dim_theta))
-        self.dim_params = self.f.dim_theta
-        self.theta = m
-        self.theta_values = []
-        self.loss_values = []
-        self.X = X
-        self.y = y
-        self.s = s
-
-    def init_parameters(self):
-        if self.theta is None:
-            self.theta = np.random.randn(self.dim_params)
-        self.theta_values.append(self.theta)
-        self.loss_values.append(self.loss.loss(self.f.f(self.theta, self.X), self.y))
-
-    def step():
-        pass
-    
-    def zero_grad():
-        pass
 
 class MyLinear_deterministic(object):
     def __init__(self, n_input, n_output):
