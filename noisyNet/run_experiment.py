@@ -100,17 +100,7 @@ class dqn_agent:
                     self.model.reset_noise()
                     
                 return loss
-            
-            # QYmax = self.model(Y).max(1)[0].detach()
-            # #update = torch.addcmul(R, self.gamma, 1-D, QYmax)
-            # update = torch.addcmul(R, 1-D, QYmax, value=self.gamma)
-            # outputs = self.model(X)
-            # QXA = outputs.gather(1, A.to(torch.long).unsqueeze(1))
-            
-            # self.optimizer.zero_grad()
-            # # output = self.model(data)
-            # loss = self.criterion(QXA, update.unsqueeze(1))
-            # loss.backward()
+        
             if self.config["optimizer"] == "SGD":
                 QYmax = self.model(Y).max(1)[0].detach()
                 #update = torch.addcmul(R, self.gamma, 1-D, QYmax)
