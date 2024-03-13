@@ -14,6 +14,14 @@ This document outlines our original contributions and experimental highlights, f
 ### Experiment 1: Smoothing Effect and Robustness
 
 We propose an experiment to showcase the smoothing effect and the robustness of solutions provided by the Bayesian versions of algorithms. This experiment is designed to highlight how Bayesian approaches can stabilize the learning process and yield more reliable solutions across a range of conditions. To remake experiments, you can run notebooks flat_regions.ipynb and MLP_esp.ipynb. The first one tries to give some insights on the role of the Bayesian approach and tries to understand to what extent it can provide more robust solutions. The second one illustrates these principles through a toy example of a from-scracth MLP that performs classification, and compares to more conventional approaches in terms of robustness and stability. 
+
+
+<p align="center">
+  <img src="/noisyNet/results/blr.gif" alt="Robustness_BLR" width="50%" height="auto">
+  <br>
+  <em>Smoothing effects and stability of the BLR</em>
+</p>
+
 ### Experiment 2: Stochastic Average Gradient Descent (SAG)
 
 As an additional contribution, we introduce a novel learning algorithm based on the universality of the Bayesian Linear Regression (BLR). This algorithm, derived for Stochastic Average Gradient Descent (SAG), has not been previously described. Our experiment aims to underline the versatility and applicability of BLR in optimizing gradient descent methods in a Bayesian framework.
