@@ -41,12 +41,5 @@ You can modify settings in the config dictionnary in this file.
 Through these experiments, we aim to demonstrate the inherent benefits of Bayesian methods in machine learning, from enhancing stability and robustness to offering novel approaches to algorithm optimization. Our work underscores the importance of continuing to explore and integrate Bayesian principles into machine learning to uncover more effective and efficient solutions, but also to derive new algorithms that will rely on information geometry. 
 
 
-## Requirements
-
-
-
-## Usage
-
-
 
 
